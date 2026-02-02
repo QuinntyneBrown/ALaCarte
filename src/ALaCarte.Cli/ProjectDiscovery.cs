@@ -28,7 +28,7 @@ public static class ProjectDiscovery
             }
         }
 
-        return await Task.FromResult(projects);
+        return projects;
     }
 
     public static async Task<List<string>> DiscoverAngularProjects(string solutionPath)
@@ -53,6 +53,6 @@ public static class ProjectDiscovery
             }
         }
 
-        return await Task.FromResult(projects);
+        return projects;
     }
 }

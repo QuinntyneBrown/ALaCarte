@@ -133,8 +133,6 @@ public static class DotNetIntegration
         {
             Console.WriteLine($"  Warning: Failed to strip relative references: {ex.Message}");
         }
-
-        await Task.CompletedTask;
     }
 
     private static async Task ReplaceNuGetWithProjectReferences(
@@ -201,8 +199,6 @@ public static class DotNetIntegration
         {
             Console.WriteLine($"  Warning: Failed to replace NuGet references: {ex.Message}");
         }
-
-        await Task.CompletedTask;
     }
 
     private static void CopyDirectory(string sourceDir, string destDir)
