@@ -34,7 +34,23 @@ public static class GitOperations
 
     private static string GetRepositoryName(string repoUrl)
     {
-        var uri = new Uri(repoUrl.Replace(".git", ""));
+        // Remove .git suffix if present
+        var url = repoUrl.Replace(".git", "");
+        
+        // Handle SSH URLs (e.g., git@github.com:user/repo)
+        if (url.Contains("@") && url.Contains(":"))
+        {
+            var parts = url.Split(':');
+            if (parts.Length >= 2)
+            {
+                // Get the path part after the colon
+                var path = parts[^1];
+                return Path.GetFileName(path);
+            }
+        }
+        
+        // Handle HTTPS URLs (e.g., https://github.com/user/repo)
+        var uri = new Uri(url);
         return Path.GetFileName(uri.LocalPath);
     }
 

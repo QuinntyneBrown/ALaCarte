@@ -4,10 +4,10 @@ A CLI tool to create a new solution from git repositories, integrating both .NET
 
 ## Overview
 
-ALaCarte is a command-line tool built with System.CommandLine that helps you create a new solution by combining multiple git repositories. It automatically:
+ALaCarte is a command-line tool built with System.CommandLine that helps you create a new solution by combining multiple git repositories using **git command line tools**. It automatically:
 
 - Initializes a new git repository
-- Adds git repositories as submodules
+- Adds git repositories as submodules (supports GitHub, GitLab, and self-hosted git servers)
 - Discovers and integrates .NET projects
 - Discovers and integrates Angular projects/libraries
 - Creates a unified .NET solution
@@ -17,8 +17,14 @@ ALaCarte is a command-line tool built with System.CommandLine that helps you cre
 ## Features
 
 ### Git Integration
-- Creates a new folder and initializes it as a git repository
+- Creates a new folder and initializes it as a git repository using git command line tools
 - Adds all provided git repositories as submodules with specified branch
+- **Supports multiple git providers:**
+  - GitHub (https://github.com or git@github.com)
+  - GitLab (https://gitlab.com or git@gitlab.com, including nested groups)
+  - Self-hosted Git servers (any URL format)
+  - Both HTTPS and SSH URL formats
+  - Repositories with multiple owners/organizations
 
 ### .NET Project Integration
 - Discovers all .NET projects (`.csproj` files) in the submodules

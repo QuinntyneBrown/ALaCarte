@@ -1,8 +1,16 @@
 # ALaCarte Usage Examples
 
-This document provides practical examples of how to use the ALaCarte CLI tool.
+This document provides practical examples of how to use the ALaCarte CLI tool with various git providers.
 
-## Example 1: Creating a Solution from Public GitHub Repositories
+## Git Provider Support
+
+ALaCarte uses git command line tools and supports multiple git providers:
+- **GitHub** (HTTPS and SSH)
+- **GitLab** (HTTPS and SSH, including nested groups)
+- **Self-hosted Git servers** (any URL format)
+- **Multiple owners/organizations** (works with complex repository structures)
+
+## Example 1: Creating a Solution from Public GitHub Repositories (HTTPS)
 
 Suppose you have two .NET library repositories on GitHub that you want to combine into a single solution:
 
@@ -21,6 +29,48 @@ This will:
 5. Create a unified solution in `my-combined-solution/Solution.sln`
 6. Copy projects to `my-combined-solution/src/`
 7. Resolve dependencies between projects
+
+## Example 1a: Using SSH URLs with GitHub
+
+You can also use SSH URLs if you have SSH keys configured:
+
+```bash
+dotnet run --project src/ALaCarte.Cli/ALaCarte.Cli.csproj -- init \
+  --repos git@github.com:your-org/library-a.git git@github.com:your-org/library-b.git \
+  --branch main \
+  --folder my-combined-solution
+```
+
+## Example 1b: Using GitLab Repositories
+
+ALaCarte works seamlessly with GitLab repositories, including those with nested groups:
+
+```bash
+dotnet run --project src/ALaCarte.Cli/ALaCarte.Cli.csproj -- init \
+  --repos https://gitlab.com/group/subgroup/project-a.git https://gitlab.com/group/project-b.git \
+  --branch main \
+  --folder gitlab-solution
+```
+
+## Example 1c: Using Self-Hosted Git Repositories
+
+For self-hosted git servers (like GitHub Enterprise, GitLab self-hosted, or Gitea):
+
+```bash
+dotnet run --project src/ALaCarte.Cli/ALaCarte.Cli.csproj -- init \
+  --repos https://git.company.com/team/backend.git https://git.company.com/team/frontend.git \
+  --branch develop \
+  --folder company-solution
+```
+
+Or with SSH:
+
+```bash
+dotnet run --project src/ALaCarte.Cli/ALaCarte.Cli.csproj -- init \
+  --repos git@git.company.com:team/backend.git git@git.company.com:team/frontend.git \
+  --branch develop \
+  --folder company-solution
+```
 
 ## Example 2: Working with Multiple Branches
 
