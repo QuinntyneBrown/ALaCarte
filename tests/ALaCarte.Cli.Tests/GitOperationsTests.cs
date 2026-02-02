@@ -57,8 +57,15 @@ public class GitOperationsTests
         }
         finally
         {
-            if (Directory.Exists(tempPath))
-                Directory.Delete(tempPath, true);
+            try
+            {
+                if (Directory.Exists(tempPath))
+                    Directory.Delete(tempPath, true);
+            }
+            catch
+            {
+                // Suppress cleanup exceptions to avoid masking test failures
+            }
         }
     }
 }

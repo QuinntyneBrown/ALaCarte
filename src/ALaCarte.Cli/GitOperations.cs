@@ -37,14 +37,19 @@ public static class GitOperations
         // Remove .git suffix if present
         var url = repoUrl.Replace(".git", "");
         
-        // Handle SSH URLs (e.g., git@github.com:user/repo)
-        if (url.Contains("@") && url.Contains(":"))
+        // Handle SSH URLs (e.g., git@github.com:user/repo or user@host:path/repo)
+        // SSH URLs have the format: [user@]host:path
+        // We check if it contains '@' followed by ':' and doesn't start with http(s)://
+        if (!url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) && 
+            !url.StartsWith("https://", StringComparison.OrdinalIgnoreCase) &&
+            url.Contains('@'))
         {
-            var parts = url.Split(':');
-            if (parts.Length >= 2)
+            // Find the last colon which separates the host from the path
+            var lastColonIndex = url.LastIndexOf(':');
+            if (lastColonIndex > 0 && lastColonIndex < url.Length - 1)
             {
-                // Get the path part after the colon
-                var path = parts[^1];
+                // Get the path part after the last colon
+                var path = url.Substring(lastColonIndex + 1);
                 return Path.GetFileName(path);
             }
         }
