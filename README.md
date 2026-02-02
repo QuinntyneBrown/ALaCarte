@@ -169,6 +169,15 @@ The tool removes:
 
 This ensures projects build cleanly in their new location without external dependencies.
 
+## Roadmap
+
+See [ROADMAP.md](ROADMAP.md) for the detailed roadmap to full-featured implementation, including:
+- Enhanced project selection and filtering
+- Advanced Angular library transformation
+- Bidirectional sync and push-back to source repositories
+- Workspace management commands
+- IDE integration and advanced features
+
 ## License
 
 See [LICENSE](LICENSE) file for details.
