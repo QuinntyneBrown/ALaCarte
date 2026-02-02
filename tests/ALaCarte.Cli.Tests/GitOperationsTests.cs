@@ -15,6 +15,8 @@ public class GitOperationsTests
     [InlineData("https://git.company.com/owner/repo", "repo")]
     [InlineData("https://git.company.com/team/owner/repo.git", "repo")]
     [InlineData("https://git.company.com/team/owner/repo", "repo")]
+    [InlineData("https://user@github.com/org/repo.git", "repo")] // HTTPS with userinfo
+    [InlineData("https://token@gitlab.com/group/project.git", "project")] // HTTPS with token
     [InlineData("git@github.com:user/repo.git", "repo")]
     [InlineData("git@gitlab.com:user/repo.git", "repo")]
     [InlineData("git@git.company.com:owner/repo.git", "repo")]
