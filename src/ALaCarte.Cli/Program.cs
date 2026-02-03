@@ -22,15 +22,23 @@ var folderOption = new Option<string?>(
     aliases: ["--folder", "-f"],
     description: "Folder name for the new solution (optional)");
 
+var projectsOption = new Option<string[]?>(
+    aliases: ["--projects", "-p"],
+    description: "Project names or paths to include (supports wildcards, e.g., 'Messaging.Contracts' or '*/ConferenceEventManager/*')")
+{
+    AllowMultipleArgumentsPerToken = true
+};
+
 initCommand.AddOption(reposOption);
 initCommand.AddOption(branchOption);
 initCommand.AddOption(folderOption);
+initCommand.AddOption(projectsOption);
 
-initCommand.SetHandler(async (string[] repos, string branch, string? folder) =>
+initCommand.SetHandler(async (string[] repos, string branch, string? folder, string[]? projects) =>
 {
     var handler = new InitCommandHandler();
-    await handler.ExecuteAsync(repos, branch, folder);
-}, reposOption, branchOption, folderOption);
+    await handler.ExecuteAsync(repos, branch, folder, projects);
+}, reposOption, branchOption, folderOption, projectsOption);
 
 rootCommand.AddCommand(initCommand);
 

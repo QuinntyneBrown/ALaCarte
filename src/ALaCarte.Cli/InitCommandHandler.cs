@@ -4,7 +4,7 @@ namespace ALaCarte.Cli;
 
 public class InitCommandHandler
 {
-    public async Task ExecuteAsync(string[] repos, string branch, string? folder)
+    public async Task ExecuteAsync(string[] repos, string branch, string? folder, string[]? projectFilters = null)
     {
         try
         {
@@ -12,6 +12,10 @@ public class InitCommandHandler
             Console.WriteLine($"Repositories: {string.Join(", ", repos)}");
             Console.WriteLine($"Branch: {branch}");
             Console.WriteLine($"Folder: {folder ?? "(auto-generated)"}");
+            if (projectFilters != null && projectFilters.Length > 0)
+            {
+                Console.WriteLine($"Project filters: {string.Join(", ", projectFilters)}");
+            }
 
             // Determine folder name
             var solutionFolder = folder ?? $"alacarte-{DateTime.Now:yyyyMMdd-HHmmss}";
@@ -35,8 +39,8 @@ public class InitCommandHandler
             await GitOperations.AddSubmodules(solutionPath, repos, branch);
 
             // Discover projects
-            var dotnetProjects = await ProjectDiscovery.DiscoverDotNetProjects(solutionPath);
-            var angularProjects = await ProjectDiscovery.DiscoverAngularProjects(solutionPath);
+            var dotnetProjects = await ProjectDiscovery.DiscoverDotNetProjects(solutionPath, projectFilters);
+            var angularProjects = await ProjectDiscovery.DiscoverAngularProjects(solutionPath, projectFilters);
 
             // Create .NET solution if needed
             if (dotnetProjects.Any())
