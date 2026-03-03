@@ -35,8 +35,8 @@ public class InitCommandHandler
             // Initialize git repository
             await GitOperations.InitializeRepository(solutionPath);
 
-            // Add submodules
-            await GitOperations.AddSubmodules(solutionPath, repos, branch);
+            // Add repositories
+            await GitOperations.AddRepositories(solutionPath, repos, branch);
 
             // Discover projects
             var dotnetProjects = await ProjectDiscovery.DiscoverDotNetProjects(solutionPath, projectFilters);
