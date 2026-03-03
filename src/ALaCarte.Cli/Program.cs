@@ -69,4 +69,26 @@ initCommand.SetHandler(async (context) =>
 
 rootCommand.AddCommand(initCommand);
 
+var installCommand = new Command("install", "Install ALaCarte components");
+
+var skillsOption = new Option<bool>(
+    aliases: ["--skills", "-s"],
+    description: "Install the ALaCarte Claude skill");
+
+installCommand.AddOption(skillsOption);
+
+installCommand.SetHandler(async (context) =>
+{
+    var skills = context.ParseResult.GetValueForOption(skillsOption);
+
+    if (skills)
+    {
+        var handler = serviceProvider.GetRequiredService<InstallSkillCommandHandler>();
+        var currentDirectory = Directory.GetCurrentDirectory();
+        context.ExitCode = await handler.ExecuteAsync(currentDirectory, context.GetCancellationToken());
+    }
+});
+
+rootCommand.AddCommand(installCommand);
+
 return await rootCommand.InvokeAsync(args);

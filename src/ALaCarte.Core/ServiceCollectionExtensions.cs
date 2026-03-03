@@ -21,6 +21,7 @@ public static class ServiceCollectionExtensions
 
         // Register command handlers
         services.AddTransient<InitCommandHandler>();
+        services.AddTransient<InstallSkillCommandHandler>();
 
         return services;
     }
