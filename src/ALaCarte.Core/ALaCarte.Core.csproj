@@ -17,6 +17,10 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.0" />
+    <PackageReference Include="QuinntyneBrown.CodeGenerator.Angular" Version="1.2.0" />
+    <PackageReference Include="QuinntyneBrown.CodeGenerator.Core" Version="1.2.0" />
+    <PackageReference Include="QuinntyneBrown.CodeGenerator.DotNet" Version="1.2.0" />
+    <PackageReference Include="QuinntyneBrown.Git.Core" Version="1.0.0" />
   </ItemGroup>
 
 </Project>
