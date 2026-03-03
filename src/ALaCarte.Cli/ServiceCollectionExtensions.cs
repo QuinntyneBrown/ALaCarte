@@ -1,7 +1,5 @@
-using ALaCarte.Cli.Abstractions;
-using ALaCarte.Cli.Commands;
-using ALaCarte.Cli.Options;
-using ALaCarte.Cli.Services;
+using ALaCarte.Core;
+using ALaCarte.Core.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -18,17 +16,7 @@ public static class ServiceCollectionExtensions
         services.Configure<AngularOptions>(configuration.GetSection(AngularOptions.SectionName));
 
         // Register core services
-        services.AddSingleton<IFileSystem, FileSystemService>();
-        services.AddSingleton<IProcessRunner, ProcessRunner>();
-
-        // Register domain services
-        services.AddTransient<IGitService, GitService>();
-        services.AddTransient<IProjectDiscoveryService, ProjectDiscoveryService>();
-        services.AddTransient<IDotNetService, DotNetService>();
-        services.AddTransient<IAngularService, AngularService>();
-
-        // Register command handlers
-        services.AddTransient<InitCommandHandler>();
+        services.AddAlacarteCoreServices();
 
         return services;
     }

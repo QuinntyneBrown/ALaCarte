@@ -1,6 +1,6 @@
 using System.CommandLine;
 using ALaCarte.Cli;
-using ALaCarte.Cli.Commands;
+using ALaCarte.Core.Commands;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

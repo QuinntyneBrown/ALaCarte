@@ -1,8 +1,9 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/ALaCarte.Cli/ALaCarte.Cli.csproj" />
+    <Project Path="src/ALaCarte.Core/ALaCarte.Core.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="tests/ALaCarte.Cli.Tests/ALaCarte.Cli.Tests.csproj" />
+    <Project Path="tests/ALaCarte.Core.Tests/ALaCarte.Core.Tests.csproj" />
   </Folder>
 </Solution>
