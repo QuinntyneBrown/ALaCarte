@@ -1,6 +1,28 @@
-﻿using System.CommandLine;
+using System.CommandLine;
 using ALaCarte.Cli;
+using ALaCarte.Cli.Commands;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
+// Build configuration
+var configuration = new ConfigurationBuilder()
+    .SetBasePath(AppContext.BaseDirectory)
+    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+    .Build();
+
+// Build service provider
+var services = new ServiceCollection();
+services.AddLogging(builder =>
+{
+    builder.AddConsole();
+    builder.SetMinimumLevel(LogLevel.Information);
+});
+services.AddAlacarteServices(configuration);
+
+var serviceProvider = services.BuildServiceProvider();
+
+// Build command structure
 var rootCommand = new RootCommand("ALaCarte - A tool to create a new solution from git repositories");
 
 var initCommand = new Command("init", "Initialize a new solution from git repositories");
@@ -34,11 +56,16 @@ initCommand.AddOption(branchOption);
 initCommand.AddOption(folderOption);
 initCommand.AddOption(projectsOption);
 
-initCommand.SetHandler(async (string[] repos, string branch, string? folder, string[]? projects) =>
+initCommand.SetHandler(async (context) =>
 {
-    var handler = new InitCommandHandler();
-    await handler.ExecuteAsync(repos, branch, folder, projects);
-}, reposOption, branchOption, folderOption, projectsOption);
+    var repos = context.ParseResult.GetValueForOption(reposOption)!;
+    var branch = context.ParseResult.GetValueForOption(branchOption)!;
+    var folder = context.ParseResult.GetValueForOption(folderOption);
+    var projects = context.ParseResult.GetValueForOption(projectsOption);
+
+    var handler = serviceProvider.GetRequiredService<InitCommandHandler>();
+    context.ExitCode = await handler.ExecuteAsync(repos, branch, folder, projects, context.GetCancellationToken());
+});
 
 rootCommand.AddCommand(initCommand);
 
