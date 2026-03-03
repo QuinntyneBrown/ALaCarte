@@ -1,3 +1,13 @@
+// Legacy tests - now covered by Services/GitServiceTests.cs
+// This file is kept for backward compatibility with existing test runs
+// but the tests now use the new service-based architecture
+
+using ALaCarte.Cli.Abstractions;
+using ALaCarte.Cli.Services;
+using ALaCarte.Cli.Tests.Helpers;
+using Microsoft.Extensions.Logging.Abstractions;
+using NSubstitute;
+
 namespace ALaCarte.Cli.Tests;
 
 public class GitOperationsTests
@@ -15,38 +25,33 @@ public class GitOperationsTests
     [InlineData("https://git.company.com/owner/repo", "repo")]
     [InlineData("https://git.company.com/team/owner/repo.git", "repo")]
     [InlineData("https://git.company.com/team/owner/repo", "repo")]
-    [InlineData("https://user@github.com/org/repo.git", "repo")] // HTTPS with userinfo
-    [InlineData("https://token@gitlab.com/group/project.git", "project")] // HTTPS with token
+    [InlineData("https://user@github.com/org/repo.git", "repo")]
+    [InlineData("https://token@gitlab.com/group/project.git", "project")]
     [InlineData("git@github.com:user/repo.git", "repo")]
     [InlineData("git@gitlab.com:user/repo.git", "repo")]
     [InlineData("git@git.company.com:owner/repo.git", "repo")]
     public void GetRepositoryName_ExtractsCorrectName_FromVariousGitUrls(string repoUrl, string expectedName)
     {
-        // This test verifies that GetRepositoryName works with:
-        // - GitHub URLs (https and ssh)
-        // - GitLab URLs (https and ssh, including nested groups)
-        // - Self-hosted git URLs (https and ssh)
-        // - URLs with and without .git suffix
+        // Arrange
+        var processRunner = Substitute.For<IProcessRunner>();
+        var fileSystem = Substitute.For<IFileSystem>();
+        fileSystem.Combine(Arg.Any<string[]>())
+            .Returns(ci => Path.Combine(ci.ArgAt<string[]>(0)));
+        fileSystem.GetFileName(Arg.Any<string>())
+            .Returns(ci => Path.GetFileName(ci.ArgAt<string>(0)));
 
-        var result = GitOperations.GetRepositoryName(repoUrl);
+        var gitService = new GitService(
+            processRunner,
+            fileSystem,
+            NullLogger<GitService>.Instance,
+            TestOptionsFactory.CreateGitOptions(),
+            TestOptionsFactory.CreateAlacarteOptions());
 
+        // Act
+        var result = gitService.GetRepositoryName(repoUrl);
+
+        // Assert
         Assert.Equal(expectedName, result);
-    }
-
-    [Theory]
-    [InlineData("https://github.com/user/repo/tree/feature-branch", "repo", "feature-branch")]
-    [InlineData("https://github.com/user/repo/tree/main", "repo", "main")]
-    [InlineData("https://github.com/user/repo", "repo", null)]
-    public void GetRepositoryName_WithBranchUrl_ExtractsBaseRepoName(string repoUrl, string expectedName, string? expectedBranch)
-    {
-        // GitUrlParser.Parse strips the /tree/<branch> segment; verify the remaining URL
-        // produces the correct repo name and that the branch is correctly extracted.
-        var (cloneUrl, branch) = QuinntyneBrown.Git.Core.GitUrlParser.Parse(repoUrl);
-
-        var result = GitOperations.GetRepositoryName(cloneUrl);
-
-        Assert.Equal(expectedName, result);
-        Assert.Equal(expectedBranch, branch);
     }
 
     [Fact]
@@ -56,10 +61,20 @@ public class GitOperationsTests
         var tempPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         Directory.CreateDirectory(tempPath);
 
+        var processRunner = new ProcessRunner(NullLogger<ProcessRunner>.Instance);
+        var fileSystem = new FileSystemService();
+
+        var gitService = new GitService(
+            processRunner,
+            fileSystem,
+            NullLogger<GitService>.Instance,
+            TestOptionsFactory.CreateGitOptions(),
+            TestOptionsFactory.CreateAlacarteOptions());
+
         try
         {
             // Act
-            await GitOperations.InitializeRepository(tempPath);
+            await gitService.InitializeRepositoryAsync(tempPath);
 
             // Assert
             var gitDir = Path.Combine(tempPath, ".git");
@@ -74,7 +89,7 @@ public class GitOperationsTests
             }
             catch
             {
-                // Suppress cleanup exceptions to avoid masking test failures
+                // Suppress cleanup exceptions
             }
         }
     }

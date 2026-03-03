@@ -1,4 +1,13 @@
-﻿namespace ALaCarte.Cli.Tests;
+// Legacy tests - now covered by Services/ProjectDiscoveryServiceTests.cs
+// This file is kept for backward compatibility with existing test runs
+// but the tests now use the new service-based architecture
+
+using ALaCarte.Cli.Abstractions;
+using ALaCarte.Cli.Services;
+using ALaCarte.Cli.Tests.Helpers;
+using Microsoft.Extensions.Logging.Abstractions;
+
+namespace ALaCarte.Cli.Tests;
 
 public class ProjectDiscoveryTests
 {
@@ -9,10 +18,17 @@ public class ProjectDiscoveryTests
         var tempPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         Directory.CreateDirectory(tempPath);
 
+        var fileSystem = new FileSystemService();
+        var service = new ProjectDiscoveryService(
+            fileSystem,
+            NullLogger<ProjectDiscoveryService>.Instance,
+            TestOptionsFactory.CreateAlacarteOptions(),
+            TestOptionsFactory.CreateDotNetOptions());
+
         try
         {
             // Act
-            var projects = await ProjectDiscovery.DiscoverDotNetProjects(tempPath);
+            var projects = await service.DiscoverDotNetProjectsAsync(tempPath);
 
             // Assert
             Assert.Empty(projects);
@@ -31,10 +47,17 @@ public class ProjectDiscoveryTests
         var tempPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         Directory.CreateDirectory(tempPath);
 
+        var fileSystem = new FileSystemService();
+        var service = new ProjectDiscoveryService(
+            fileSystem,
+            NullLogger<ProjectDiscoveryService>.Instance,
+            TestOptionsFactory.CreateAlacarteOptions(),
+            TestOptionsFactory.CreateDotNetOptions());
+
         try
         {
             // Act
-            var projects = await ProjectDiscovery.DiscoverAngularProjects(tempPath);
+            var projects = await service.DiscoverAngularProjectsAsync(tempPath);
 
             // Assert
             Assert.Empty(projects);
@@ -57,10 +80,17 @@ public class ProjectDiscoveryTests
         var csprojPath = Path.Combine(submodulesPath, "TestProject.csproj");
         File.WriteAllText(csprojPath, "<Project Sdk=\"Microsoft.NET.Sdk\"></Project>");
 
+        var fileSystem = new FileSystemService();
+        var service = new ProjectDiscoveryService(
+            fileSystem,
+            NullLogger<ProjectDiscoveryService>.Instance,
+            TestOptionsFactory.CreateAlacarteOptions(),
+            TestOptionsFactory.CreateDotNetOptions());
+
         try
         {
             // Act
-            var projects = await ProjectDiscovery.DiscoverDotNetProjects(tempPath);
+            var projects = await service.DiscoverDotNetProjectsAsync(tempPath);
 
             // Assert
             Assert.Single(projects);
@@ -81,17 +111,35 @@ public class ProjectDiscoveryTests
         var submodulesPath = Path.Combine(tempPath, "submodules", "test-repo");
         Directory.CreateDirectory(submodulesPath);
 
+        // Create a valid angular.json with projects
         var angularJsonPath = Path.Combine(submodulesPath, "angular.json");
-        File.WriteAllText(angularJsonPath, "{}");
+        File.WriteAllText(angularJsonPath, """
+        {
+            "projects": {
+                "my-app": {
+                    "root": "projects/my-app",
+                    "projectType": "application"
+                }
+            }
+        }
+        """);
+
+        var fileSystem = new FileSystemService();
+        var service = new ProjectDiscoveryService(
+            fileSystem,
+            NullLogger<ProjectDiscoveryService>.Instance,
+            TestOptionsFactory.CreateAlacarteOptions(),
+            TestOptionsFactory.CreateDotNetOptions());
 
         try
         {
             // Act
-            var projects = await ProjectDiscovery.DiscoverAngularProjects(tempPath);
+            var projects = await service.DiscoverAngularProjectsAsync(tempPath);
 
             // Assert
             Assert.Single(projects);
-            Assert.Equal(submodulesPath, projects[0]);
+            Assert.Equal(submodulesPath, projects[0].WorkspacePath);
+            Assert.Contains("my-app", projects[0].ProjectNames);
         }
         finally
         {
