@@ -27,18 +27,26 @@ public class GitOperationsTests
         // - GitLab URLs (https and ssh, including nested groups)
         // - Self-hosted git URLs (https and ssh)
         // - URLs with and without .git suffix
-        
-        // Since GetRepositoryName is private, we test it indirectly
-        // by using reflection or by making it internal and using InternalsVisibleTo
-        var gitOpsType = typeof(GitOperations);
-        var method = gitOpsType.GetMethod("GetRepositoryName", 
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-        
-        Assert.NotNull(method);
-        
-        var result = method.Invoke(null, new object[] { repoUrl }) as string;
-        
+
+        var result = GitOperations.GetRepositoryName(repoUrl);
+
         Assert.Equal(expectedName, result);
+    }
+
+    [Theory]
+    [InlineData("https://github.com/user/repo/tree/feature-branch", "repo", "feature-branch")]
+    [InlineData("https://github.com/user/repo/tree/main", "repo", "main")]
+    [InlineData("https://github.com/user/repo", "repo", null)]
+    public void GetRepositoryName_WithBranchUrl_ExtractsBaseRepoName(string repoUrl, string expectedName, string? expectedBranch)
+    {
+        // GitUrlParser.Parse strips the /tree/<branch> segment; verify the remaining URL
+        // produces the correct repo name and that the branch is correctly extracted.
+        var (cloneUrl, branch) = QuinntyneBrown.Git.Core.GitUrlParser.Parse(repoUrl);
+
+        var result = GitOperations.GetRepositoryName(cloneUrl);
+
+        Assert.Equal(expectedName, result);
+        Assert.Equal(expectedBranch, branch);
     }
 
     [Fact]
