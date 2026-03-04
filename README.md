@@ -1,11 +1,18 @@
 # ALaCarte
 
-A CLI tool to create a new solution from git repositories, integrating both .NET and Angular projects.
+A CLI tool to scaffold project workspaces and create composite solutions from multiple git repositories, integrating both .NET and Angular projects.
 
 ## Overview
 
-ALaCarte is a command-line tool built with System.CommandLine that helps you create a new solution by combining multiple git repositories using **git command line tools**. It automatically:
+ALaCarte is a command-line tool built with System.CommandLine that helps you:
 
+- **Scaffold new project workspaces** with a build solution, console application, and Claude Code skill
+- **Compose multi-repo solutions** by combining multiple git repositories using git submodules
+
+It automatically:
+
+- Scaffolds a workspace with a build solution and ALaCarte.Core package reference
+- Installs a Claude Code skill for AI-assisted development
 - Initializes a new git repository
 - Adds git repositories as submodules (supports GitHub, GitLab, and self-hosted git servers)
 - Discovers and integrates .NET projects
@@ -14,7 +21,23 @@ ALaCarte is a command-line tool built with System.CommandLine that helps you cre
 - Creates a unified Angular workspace
 - Resolves project dependencies by replacing NuGet references with project references
 
+## Installation
+
+```bash
+dotnet tool install --global QuinntyneBrown.ALaCarte.Cli
+```
+
 ## Features
+
+### Project Scaffolding
+- Scaffold a new project workspace with `a-la-carte --name <project-name>`
+- Creates a `build` solution with a console application project
+- Automatically adds a `PackageReference` to `QuinntyneBrown.ALaCarte.Core`
+- Installs a Claude Code skill (`.claude/skills/a-la-carte/SKILL.md`) in the build folder for AI-assisted development
+
+### Skill Installation
+- Install the ALaCarte Claude Code skill into any directory with `a-la-carte install --skills`
+- Documents the full ALaCarte.Core API: service registration, core abstractions, options, exceptions, and command handler patterns
 
 ### Git Integration
 - Creates a new folder and initializes it as a git repository using git command line tools
@@ -40,8 +63,6 @@ ALaCarte is a command-line tool built with System.CommandLine that helps you cre
 - Creates a new Angular workspace
 - Copies and integrates Angular projects into the workspace
 
-## Installation
-
 ### Prerequisites
 - .NET 10.0 or later
 - Git
@@ -57,58 +78,98 @@ dotnet build
 
 ## Usage
 
-### Basic Command
+### Scaffold a New Project
 
 ```bash
-dotnet run --project src/ALaCarte.Cli/ALaCarte.Cli.csproj -- init --repos <repo-url1> <repo-url2> --branch <branch-name> --folder <folder-name>
+a-la-carte --name MyProject
+a-la-carte -n MyProject
+```
+
+This creates:
+```
+MyProject/
+├── build/
+│   ├── build.csproj          # Console app referencing ALaCarte.Core
+│   └── .claude/
+│       └── skills/
+│           └── a-la-carte/
+│               └── SKILL.md  # Claude Code skill for AI-assisted development
+└── build.sln
+```
+
+### Install Claude Code Skill
+
+```bash
+a-la-carte install --skills
+```
+
+Installs the ALaCarte.Core skill into the current directory at `.claude/skills/a-la-carte/SKILL.md`.
+
+### Compose Multi-Repo Solutions
+
+```bash
+a-la-carte init --repos <repo-url1> <repo-url2> --branch <branch-name> --folder <folder-name>
 ```
 
 ### Options
 
+#### Root Command (Scaffold)
+- `--name`, `-n` (Required): Name of the project workspace to scaffold
+
+#### Init Subcommand
 - `--repos`, `-r` (Required): Git repository URLs to include (can specify multiple)
 - `--branch`, `-b` (Optional): Git branch to use (default: `main`)
 - `--folder`, `-f` (Optional): Folder name for the new solution (auto-generated if not specified)
+- `--projects`, `-p` (Optional): Filter which projects to include
+
+#### Install Subcommand
+- `--skills`, `-s`: Install the Claude Code skill
 
 ### Examples
 
-#### Create solution from multiple repositories using main branch
+#### Scaffold a new workspace
 
 ```bash
-dotnet run --project src/ALaCarte.Cli/ALaCarte.Cli.csproj -- init \
+a-la-carte --name MyApp
+```
+
+#### Create solution from multiple repositories
+
+```bash
+a-la-carte init \
   --repos https://github.com/user/repo1.git https://github.com/user/repo2.git
 ```
 
 #### Create solution with specific branch and folder name
 
 ```bash
-dotnet run --project src/ALaCarte.Cli/ALaCarte.Cli.csproj -- init \
+a-la-carte init \
   --repos https://github.com/user/repo1.git https://github.com/user/repo2.git \
   --branch develop \
   --folder my-solution
 ```
 
-#### Short form with multiple repos
-
-```bash
-dotnet run --project src/ALaCarte.Cli/ALaCarte.Cli.csproj -- init \
-  -r https://github.com/user/repo1.git https://github.com/user/repo2.git \
-  -b main \
-  -f my-solution
-```
-
 ### Help
 
 ```bash
-# General help
-dotnet run --project src/ALaCarte.Cli/ALaCarte.Cli.csproj -- --help
-
-# Help for init command
-dotnet run --project src/ALaCarte.Cli/ALaCarte.Cli.csproj -- init --help
+a-la-carte --help
+a-la-carte init --help
+a-la-carte install --help
 ```
 
 ## Output Structure
 
-After running the command, the following structure is created:
+### Scaffold (`--name`)
+
+```
+<project-name>/
+├── build/
+│   ├── build.csproj          # Console app with ALaCarte.Core reference
+│   └── .claude/skills/a-la-carte/SKILL.md
+└── build.sln
+```
+
+### Init (multi-repo composition)
 
 ```
 <solution-folder>/
