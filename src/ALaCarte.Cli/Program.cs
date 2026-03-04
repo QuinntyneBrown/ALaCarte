@@ -88,7 +88,7 @@ initCommand.SetHandler(async (context) =>
     var projects = context.ParseResult.GetValueForOption(projectsOption);
 
     var handler = serviceProvider.GetRequiredService<InitCommandHandler>();
-    context.ExitCode = await handler.ExecuteAsync(repos, branch, folder, projects, context.GetCancellationToken());
+    context.ExitCode = await handler.ExecuteAsync(repos, branch, folder, projects, ct: context.GetCancellationToken());
 });
 
 rootCommand.AddCommand(initCommand);

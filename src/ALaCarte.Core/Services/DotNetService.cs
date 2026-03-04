@@ -29,17 +29,21 @@ public class DotNetService : IDotNetService
         _alacarteOptions = alacarteOptions.Value;
     }
 
-    public async Task CreateSolutionAsync(string solutionPath, List<string> projectFiles, CancellationToken ct = default)
+    public async Task CreateSolutionAsync(string solutionPath, List<string> projectFiles, CancellationToken ct = default, SolutionFormat format = SolutionFormat.Auto)
     {
         _logger.LogInformation("Creating .NET solution...");
 
         var srcPath = _fileSystem.Combine(solutionPath, _alacarteOptions.SourceFolderName);
         _fileSystem.CreateDirectory(srcPath);
 
-        var solutionFile = _fileSystem.Combine(solutionPath, $"{_options.SolutionName}.sln");
-
         // Create solution
-        await RunDotNetCommandAsync($"new sln -n {_options.SolutionName} -o \"{solutionPath}\"", solutionPath, ct);
+        var formatArg = format switch
+        {
+            SolutionFormat.Sln => " --format sln",
+            SolutionFormat.Slnx => " --format slnx",
+            _ => ""
+        };
+        await RunDotNetCommandAsync($"new sln -n {_options.SolutionName} -o \"{solutionPath}\"{formatArg}", solutionPath, ct);
 
         var projectMap = new Dictionary<string, string>();
         var packageToProject = new Dictionary<string, string>();
@@ -75,10 +79,18 @@ public class DotNetService : IDotNetService
         }
 
         // Add all projects to solution
-        foreach (var projectPath in projectMap.Values)
+        if (projectMap.Count > 0)
         {
-            var relativePath = _fileSystem.GetRelativePath(solutionPath, projectPath);
-            await RunDotNetCommandAsync($"sln \"{solutionFile}\" add \"{relativePath}\"", solutionPath, ct);
+            // Detect actual solution file (.sln or .slnx) — .NET 10+ creates .slnx by default
+            var solutionFile = _fileSystem.GetFiles(solutionPath, "*.sln", SearchOption.TopDirectoryOnly).FirstOrDefault()
+                ?? _fileSystem.GetFiles(solutionPath, "*.slnx", SearchOption.TopDirectoryOnly).FirstOrDefault()
+                ?? _fileSystem.Combine(solutionPath, $"{_options.SolutionName}.sln");
+
+            foreach (var projectPath in projectMap.Values)
+            {
+                var relativePath = _fileSystem.GetRelativePath(solutionPath, projectPath);
+                await RunDotNetCommandAsync($"sln \"{solutionFile}\" add \"{relativePath}\"", solutionPath, ct);
+            }
         }
 
         _logger.LogInformation("Created solution with {Count} project(s)", projectMap.Count);

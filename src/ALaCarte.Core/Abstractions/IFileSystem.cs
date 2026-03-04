@@ -17,4 +17,5 @@ public interface IFileSystem
     string? GetDirectoryName(string path);
     string GetRelativePath(string relativeTo, string path);
     string GetCurrentDirectory();
+    void CopyDirectory(string source, string destination, string[]? excludedDirectories = null);
 }

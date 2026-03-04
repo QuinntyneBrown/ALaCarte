@@ -1,4 +1,4 @@
-** L1 Requirement = L1-9
+** L1 Requirement = L1-10
 
 Create a team of agents
 
@@ -17,7 +17,7 @@ Implement [L1]
 
 - for each completed L2 requirement marked as complete
 	
-	- verify the implementation is complete. No "TO DOs" or temp code.
+	- verify the implementation is complete. No To dos
 	
 	- verify the test pass
 

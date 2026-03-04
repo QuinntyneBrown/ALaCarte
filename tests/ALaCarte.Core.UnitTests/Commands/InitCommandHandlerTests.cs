@@ -241,7 +241,7 @@ public class InitCommandHandlerTests
         _gitService.InitializeRepositoryAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns<Task>(x => throw new OperationCanceledException());
 
-        var result = await _sut.ExecuteAsync(repos, "main", "test-folder", null, cts.Token);
+        var result = await _sut.ExecuteAsync(repos, "main", "test-folder", null, false, cts.Token);
 
         result.Should().Be(1);
     }

@@ -20,12 +20,38 @@ user-invocable: true
 
 Use this skill when asked to create composite .NET/Angular solutions from multiple git repositories using the ALaCarte CLI tool.
 
+## Quick Start — AlacarteHost
+
+For simple console apps, use the one-call entry point that eliminates DI boilerplate:
+
+```csharp
+using ALaCarte.Core;
+
+return await AlacarteHost.RunAsync(args, options =>
+{
+    options.Repos = ["https://github.com/org/repo1", "https://github.com/org/repo2"];
+    options.Branch = "main";
+    options.Folder = "my-solution";
+    options.ProjectFilters = ["*.Api", "*.Core"];
+    options.SolutionName = "Solution";
+    options.Overwrite = false;
+});
+```
+
+`AlacarteRunOptions` properties:
+- `Repos` (string[]) — Git repository URLs. Default: `[]`
+- `Branch` (string) — Git branch. Default: `"main"`
+- `Folder` (string) — Output folder. Default: `"."`
+- `ProjectFilters` (string[]) — Filter projects by name/pattern. Default: `[]`
+- `SolutionName` (string) — .NET solution name. Default: `"Solution"`
+- `Overwrite` (bool) — Allow re-use of existing directory. Default: `false`
+
 ## Package Reference
 
 Add the ALaCarte.Core NuGet package to your project:
 
 ```xml
-<PackageReference Include="QuinntyneBrown.ALaCarte.Core" Version="1.0.0" />
+<PackageReference Include="QuinntyneBrown.ALaCarte.Core" Version="1.1.0" />
 ```
 
 ## Service Registration
@@ -39,7 +65,9 @@ using Microsoft.Extensions.DependencyInjection;
 services.AddAlacarteCoreServices();
 ```
 
-This registers: IFileSystem, IProcessRunner, IGitService, IProjectDiscoveryService, IDotNetService, IAngularService, and InitCommandHandler.
+This registers: IFileSystem, IProcessRunner, IGitService, IProjectDiscoveryService, IDotNetService, IAngularService, InitCommandHandler, InstallSkillCommandHandler, and ScaffoldCommandHandler.
+
+Logging is optional — if no `ILoggerFactory` is registered, a `NullLoggerFactory` fallback is used automatically.
 
 ## Core Service Abstractions
 
@@ -78,8 +106,16 @@ Creates .NET solution files from discovered projects:
 using ALaCarte.Core.Abstractions;
 
 var dotNetService = serviceProvider.GetRequiredService<IDotNetService>();
+
+// Auto-detect solution format (.sln or .slnx based on SDK version)
 await dotNetService.CreateSolutionAsync(solutionPath, projectFiles, ct);
+
+// Explicitly specify solution format
+await dotNetService.CreateSolutionAsync(solutionPath, projectFiles, ct, SolutionFormat.Sln);
+await dotNetService.CreateSolutionAsync(solutionPath, projectFiles, ct, SolutionFormat.Slnx);
 ```
+
+`SolutionFormat` enum: `Auto` (default, detects SDK version), `Sln` (classic format), `Slnx` (XML format, .NET 10+).
 
 ### IAngularService
 
@@ -106,6 +142,7 @@ bool fileExists = fs.FileExists(path);
 await fs.WriteAllTextAsync(path, contents, ct);
 string content = await fs.ReadAllTextAsync(path, ct);
 fs.CopyFile(source, destination, overwrite);
+fs.CopyDirectory(source, destination, excludedDirectories);
 string fullPath = fs.GetFullPath(path);
 string combined = fs.Combine(paths);
 string[] files = fs.GetFiles(path, searchPattern, searchOption);
@@ -116,6 +153,8 @@ string? dirName = fs.GetDirectoryName(path);
 string relative = fs.GetRelativePath(relativeTo, path);
 string cwd = fs.GetCurrentDirectory();
 ```
+
+`CopyDirectory` recursively copies a directory tree. Optional `excludedDirectories` parameter filters out directories by name (default: `["obj", "bin", "node_modules", "dist"]`).
 
 ### IProcessRunner
 
@@ -224,10 +263,13 @@ int exitCode = await handler.ExecuteAsync(
     branch: "main",
     folder: "my-solution",
     projectFilters: new[] { "*.Api", "*.Core" },
+    overwrite: false,
     ct: cancellationToken);
 ```
 
 The handler orchestrates: git init, submodule add, project discovery, .NET solution creation, and Angular workspace creation. Returns 0 on success, 1 on failure.
+
+The `overwrite` parameter (default: `false`) controls whether an existing target directory is re-used. When `false`, the handler fails if the directory already exists.
 """;
 
     public InstallSkillCommandHandler(

@@ -28,7 +28,7 @@ public class InitCommandHandler
         _logger = logger;
     }
 
-    public async Task<int> ExecuteAsync(string[] repos, string branch, string? folder, string[]? projectFilters = null, CancellationToken ct = default)
+    public async Task<int> ExecuteAsync(string[] repos, string branch, string? folder, string[]? projectFilters = null, bool overwrite = false, CancellationToken ct = default)
     {
         try
         {
@@ -46,9 +46,9 @@ public class InitCommandHandler
             var solutionFolder = folder ?? $"alacarte-{DateTime.Now:yyyyMMdd-HHmmss}";
             var solutionPath = _fileSystem.GetFullPath(solutionFolder);
 
-            if (_fileSystem.DirectoryExists(solutionPath))
+            if (_fileSystem.DirectoryExists(solutionPath) && !overwrite)
             {
-                _logger.LogError("Folder '{SolutionPath}' already exists.", solutionPath);
+                _logger.LogError("Folder '{SolutionPath}' already exists. Use overwrite option to re-use existing directory.", solutionPath);
                 return 1;
             }
 

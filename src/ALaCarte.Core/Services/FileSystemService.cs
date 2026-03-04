@@ -37,4 +37,28 @@ public class FileSystemService : IFileSystem
     public string GetRelativePath(string relativeTo, string path) => Path.GetRelativePath(relativeTo, path);
 
     public string GetCurrentDirectory() => Directory.GetCurrentDirectory();
+
+    private static readonly string[] DefaultExcludedDirectories = ["obj", "bin", "node_modules", "dist"];
+
+    public void CopyDirectory(string source, string destination, string[]? excludedDirectories = null)
+    {
+        var excluded = excludedDirectories ?? DefaultExcludedDirectories;
+
+        Directory.CreateDirectory(destination);
+
+        foreach (var file in Directory.GetFiles(source, "*", SearchOption.TopDirectoryOnly))
+        {
+            var destFile = Path.Combine(destination, Path.GetFileName(file));
+            File.Copy(file, destFile, true);
+        }
+
+        foreach (var dir in Directory.GetDirectories(source))
+        {
+            var dirName = Path.GetFileName(dir);
+            if (excluded.Contains(dirName))
+                continue;
+
+            CopyDirectory(dir, Path.Combine(destination, dirName), excludedDirectories);
+        }
+    }
 }
