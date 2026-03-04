@@ -25,6 +25,30 @@ var serviceProvider = services.BuildServiceProvider();
 // Build command structure
 var rootCommand = new RootCommand("ALaCarte - A tool to create a new solution from git repositories");
 
+var nameOption = new Option<string?>(
+    aliases: ["--name", "-n"],
+    description: "Name for the new workspace")
+{
+    IsRequired = true
+};
+
+rootCommand.AddOption(nameOption);
+
+rootCommand.SetHandler(async (context) =>
+{
+    var name = context.ParseResult.GetValueForOption(nameOption);
+
+    if (string.IsNullOrWhiteSpace(name))
+    {
+        Console.Error.WriteLine("Error: --name is required. Usage: a-la-carte --name <workspace-name>");
+        context.ExitCode = 1;
+        return;
+    }
+
+    var handler = serviceProvider.GetRequiredService<ScaffoldCommandHandler>();
+    context.ExitCode = await handler.ExecuteAsync(name, context.GetCancellationToken());
+});
+
 var initCommand = new Command("init", "Initialize a new solution from git repositories");
 
 var reposOption = new Option<string[]>(

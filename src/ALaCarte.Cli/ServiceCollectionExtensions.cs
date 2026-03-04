@@ -18,6 +18,9 @@ public static class ServiceCollectionExtensions
         // Register core services
         services.AddAlacarteCoreServices();
 
+        // Register CodeGenerator services for scaffolding
+        services.AddDotNetServices();
+
         return services;
     }
 }

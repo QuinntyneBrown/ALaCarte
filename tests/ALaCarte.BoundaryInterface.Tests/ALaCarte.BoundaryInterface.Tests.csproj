@@ -25,6 +25,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\ALaCarte.Core\ALaCarte.Core.csproj" />
+    <PackageReference Include="QuinntyneBrown.CodeGenerator.Core" Version="1.2.0" />
+    <PackageReference Include="QuinntyneBrown.CodeGenerator.DotNet" Version="1.2.0" />
   </ItemGroup>
 
 </Project>
